@@ -94,11 +94,22 @@ class TopologyMacrocell(Topology):
             self.indoor = np.zeros(self.num_base_stations, dtype = bool)
 
     def plot(self, ax: matplotlib.axes.Axes):
+
         # create the hexagons
-        r = self.intersite_distance/3
+        if self.num_sectors == 3:
+            r = self.intersite_distance/3
+        elif self.num_sectors == 1:
+            r = self.intersite_distance/np.sqrt(3)
+
         for x, y, az in zip(self.x, self.y, self.azimuth):
+            if self.num_sectors == 3:
+                angle = int(az - 60)
+            elif self.num_sectors == 1:
+                x = x - self.intersite_distance/2
+                y = y - r/2
+                angle = int(az - 30)
             se = list([[x,y]])
-            angle = int(az - 60)
+
             for a in range(6):
                 se.extend([[se[-1][0] + r*math.cos(math.radians(angle)), se[-1][1] + r*math.sin(math.radians(angle))]])
                 angle += 60
@@ -112,7 +123,9 @@ class TopologyMacrocell(Topology):
 if __name__ == '__main__':
     intersite_distance = 500
     num_clusters = 1
-    topology = TopologyMacrocell(intersite_distance, num_clusters)
+    num_sectors = 1
+
+    topology = TopologyMacrocell(intersite_distance, num_clusters, num_sectors)
     topology.calculate_coordinates()
 
     fig = plt.figure(figsize=(8,8), facecolor='w', edgecolor='k')  # create a figure object

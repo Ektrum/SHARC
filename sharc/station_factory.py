@@ -654,6 +654,9 @@ class StationFactory(object):
         hextant = random_number_gen.random_integers(0, 5, num_stas)
         hextant_angle = np.pi / 6 + np.pi / 3 * hextant
 
+        if topology.num_sectors == 1:
+            hextant_angle += np.pi/6
+
         old_x = x
         x = x * np.cos(hextant_angle) - y * np.sin(hextant_angle)
         y = old_x * np.sin(hextant_angle) + y * np.cos(hextant_angle)
@@ -698,7 +701,7 @@ if __name__ == '__main__':
     num_sectors = 3
 
     factory = StationFactory()
-    topology = TopologyMacrocell(1000, 1)
+    topology = TopologyMacrocell(1000, 1, 1)
     topology.calculate_coordinates()
 
     class ParamsAux(object):
