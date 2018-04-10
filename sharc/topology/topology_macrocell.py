@@ -24,7 +24,7 @@ class TopologyMacrocell(Topology):
 
     ALLOWED_NUM_CLUSTERS = [1, 7]
 
-    def __init__(self, intersite_distance: float, num_clusters: int):
+    def __init__(self, intersite_distance: float, num_clusters: int, number_of_sectors = 3):
         """
         Constructor method that sets the parameters and already calls the
         calculation methods.
@@ -38,9 +38,14 @@ class TopologyMacrocell(Topology):
             error_message = "invalid number of clusters ({})".format(num_clusters)
             raise ValueError(error_message)
 
+        if number_of_sectors not in [1, 3]:
+            error_message = "invalid number of sectors ({})".format(num_clusters)
+            raise ValueError(error_message)
+
         cell_radius = intersite_distance*2/3
         super().__init__(intersite_distance, cell_radius)
         self.num_clusters = num_clusters
+        self.num_sectors = number_of_sectors
 
     def calculate_coordinates(self, random_number_gen=np.random.RandomState()):
         """
@@ -73,22 +78,38 @@ class TopologyMacrocell(Topology):
                     self.x = np.concatenate((self.x, x_central + xs))
                     self.y = np.concatenate((self.y, y_central + ys))
 
-            self.x = np.repeat(self.x, 3)
-            self.y = np.repeat(self.y, 3)
-            self.azimuth = np.tile(self.AZIMUTH, 19*self.num_clusters)
-            self.elevation = np.tile(self.ELEVATION, 3*19*self.num_clusters)
+            self.x = np.repeat(self.x, self.num_sectors)
+            self.y = np.repeat(self.y, self.num_sectors)
+
+            if self.num_sectors == 3:
+                self.azimuth = np.tile(self.AZIMUTH, 19*self.num_clusters)
+                self.elevation = np.tile(self.ELEVATION, 3*19*self.num_clusters)
+            else:
+                self.azimuth = np.zeros(19*self.num_clusters)
+                self.elevation = np.tile(-90, 19 * self.num_clusters)
 
             # In the end, we have to update the number of base stations
             self.num_base_stations = len(self.x)
-            
+
             self.indoor = np.zeros(self.num_base_stations, dtype = bool)
-                
+
     def plot(self, ax: matplotlib.axes.Axes):
+
         # create the hexagons
-        r = self.intersite_distance/3
+        if self.num_sectors == 3:
+            r = self.intersite_distance/3
+        elif self.num_sectors == 1:
+            r = self.intersite_distance/np.sqrt(3)
+
         for x, y, az in zip(self.x, self.y, self.azimuth):
+            if self.num_sectors == 3:
+                angle = int(az - 60)
+            elif self.num_sectors == 1:
+                x = x - self.intersite_distance/2
+                y = y - r/2
+                angle = int(az - 30)
             se = list([[x,y]])
-            angle = int(az - 60)
+
             for a in range(6):
                 se.extend([[se[-1][0] + r*math.cos(math.radians(angle)), se[-1][1] + r*math.sin(math.radians(angle))]])
                 angle += 60
@@ -102,7 +123,9 @@ class TopologyMacrocell(Topology):
 if __name__ == '__main__':
     intersite_distance = 500
     num_clusters = 1
-    topology = TopologyMacrocell(intersite_distance, num_clusters)
+    num_sectors = 1
+
+    topology = TopologyMacrocell(intersite_distance, num_clusters, num_sectors)
     topology.calculate_coordinates()
 
     fig = plt.figure(figsize=(8,8), facecolor='w', edgecolor='k')  # create a figure object

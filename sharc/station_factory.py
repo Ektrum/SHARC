@@ -624,9 +624,9 @@ class StationFactory(object):
             sys.stderr.write("ERROR\nInvalid RAS antenna pattern: " + param.antenna_pattern)
             sys.exit(1)
 
-        ras_station.noise_temperature = np.array([param.antenna_noise_temperature + \
-                                                  param.receiver_noise_temperature])
-        ras_station.bandwidth = np.array([param.bandwidth])
+        ras_station.noise_temperature = np.array(param.antenna_noise_temperature + \
+                                                  param.receiver_noise_temperature)
+        ras_station.bandwidth = np.array(param.bandwidth)
 
         return ras_station
 
@@ -634,7 +634,14 @@ class StationFactory(object):
     def get_random_position( num_stas: int, topology: Topology,
                              random_number_gen: np.random.RandomState,
                              min_dist_to_bs = 0, central_cell = False ):
-        hexagon_radius = topology.intersite_distance / 3
+
+        if topology.num_sectors == 3:
+            hexagon_radius = topology.intersite_distance / 3
+        elif topology.num_sectors == 1:
+            hexagon_radius = topology.intersite_distance / np.sqrt(3)
+        else:
+            sys.stderr.write("ERROR\nnumber of sectors must be either one or three")
+            sys.exit(1)
 
         min_dist_ok = False
 
@@ -656,6 +663,9 @@ class StationFactory(object):
         hextant = random_number_gen.random_integers(0, 5, num_stas)
         hextant_angle = np.pi / 6 + np.pi / 3 * hextant
 
+        if topology.num_sectors == 1:
+            hextant_angle += np.pi/6
+
         old_x = x
         x = x * np.cos(hextant_angle) - y * np.sin(hextant_angle)
         y = old_x * np.sin(hextant_angle) + y * np.cos(hextant_angle)
@@ -672,8 +682,12 @@ class StationFactory(object):
         cell_x = topology.x[cell]
         cell_y = topology.y[cell]
 
-        x = x + cell_x + hexagon_radius * np.cos(topology.azimuth[cell] * np.pi / 180)
-        y = y + cell_y + hexagon_radius * np.sin(topology.azimuth[cell] * np.pi / 180)
+        if topology.num_sectors == 3:
+            x = x + cell_x + hexagon_radius * np.cos(topology.azimuth[cell] * np.pi / 180)
+            y = y + cell_y + hexagon_radius * np.sin(topology.azimuth[cell] * np.pi / 180)
+        else:
+            x = x + cell_x
+            y = y + cell_y
 
         x = list(x)
         y = list(y)
@@ -693,8 +707,10 @@ if __name__ == '__main__':
 
     # plot uniform distribution in macrocell scenario
 
+    num_sectors = 3
+
     factory = StationFactory()
-    topology = TopologyMacrocell(1000, 1)
+    topology = TopologyMacrocell(1000, 1, 1)
     topology.calculate_coordinates()
 
     class ParamsAux(object):
@@ -707,10 +723,18 @@ if __name__ == '__main__':
             self.ue_k_m = 20
             self.bandwidth  = np.random.rand()
             self.ue_noise_figure = np.random.rand()
+            self.topology = "MACROCELL"
+            self.minimum_separation_distance_bs_ue = 10
+            self.frequency = 40000
+            self.spectral_mask = "ITU 265-E"
 
     params = ParamsAux()
 
     ant_param = ParametersAntennaImt()
+
+    ant_param.normalization = False
+    ant_param.ue_normalization_data = ""
+    ant_param.bs_normalization_data = ""
 
     ant_param.bs_element_pattern = "F1336"
     ant_param.bs_tx_element_max_g = 5
@@ -735,7 +759,7 @@ if __name__ == '__main__':
     ant_param.ue_tx_element_horiz_spacing = 0.5
     ant_param.ue_tx_element_vert_spacing = 0.5
 
-    imt_ue = factory.generate_imt_ue(params, ant_param, topology)
+    imt_ue = factory.generate_imt_ue(params, ant_param, topology, np.random.RandomState())
 
     fig = plt.figure(figsize=(8, 8), facecolor='w', edgecolor='k')  # create a figure object
     ax = fig.add_subplot(1, 1, 1)  # create an axes object in the figure
