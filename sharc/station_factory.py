@@ -719,8 +719,8 @@ if __name__ == '__main__':
             self.bs_height = 30
             self.ue_height = 3
             self.ue_indoor_percent = 0
-            self.ue_k = 3
-            self.ue_k_m = 20
+            self.ue_k = 1
+            self.ue_k_m = 100
             self.bandwidth  = np.random.rand()
             self.ue_noise_figure = np.random.rand()
             self.topology = "MACROCELL"
@@ -748,6 +748,7 @@ if __name__ == '__main__':
     ant_param.bs_tx_element_vert_spacing = 0.5
     ant_param.bs_downtilt_deg = 10
 
+    ant_param.ue_antenna_type = 'BEAMFORMING'
     ant_param.ue_element_pattern = "FIXED"
     ant_param.ue_tx_element_max_g = 5
     ant_param.ue_tx_element_phi_deg_3db = 90
