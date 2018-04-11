@@ -800,7 +800,7 @@ class PropagationClearAir(Propagation):
         KSI = 0.8
 
         for ii in range(num_dists):
-            print(str(ii))
+#            print(str(ii))
             [dc, hc, zonec, htg, hrg, Aht, Ahr] = self.closs_corr(f, d[ii,:], h[ii,:], zone, Hte, Hre, ha_t, ha_r, dk_t, dk_r)
             d[ii,:] = dc
             h[ii,:] = hc
