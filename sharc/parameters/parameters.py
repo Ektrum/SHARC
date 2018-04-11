@@ -229,6 +229,7 @@ class Parameters(object):
         self.fss_es.line_of_sight_prob = config.getfloat("FSS_ES", "line_of_sight_prob")
         self.fss_es.BOLTZMANN_CONSTANT = config.getfloat("FSS_ES", "BOLTZMANN_CONSTANT")
         self.fss_es.EARTH_RADIUS = config.getfloat("FSS_ES", "EARTH_RADIUS")
+        self.fss_es.SPEED_OF_LIGHT             = config.getfloat("FSS_ES", "SPEED_OF_LIGHT")
 
         # P452 parameters
         self.fss_es.atmospheric_pressure = config.getfloat("FSS_ES", "atmospheric_pressure")

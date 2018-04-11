@@ -227,7 +227,9 @@ class SimulationUplink(Simulation):
         self.system.inr = np.array([self.system.rx_interference - self.system.thermal_noise])
 
         # Calculate PFD at the system
-        if self.system.station_type is StationType.RAS:
+        if (self.system.station_type is StationType.RAS) or (self.system.station_type is StationType.FSS_ES):
+            wavelength = self.param_system.SPEED_OF_LIGHT/(self.param_system.frequency*1e6)
+            self.system.antenna[0].effective_area = (wavelength**2)/(4*np.pi)
             self.system.pfd = 10*np.log10(10**(self.system.rx_interference/10)/self.system.antenna[0].effective_area)
 
 
@@ -235,7 +237,7 @@ class SimulationUplink(Simulation):
         if not self.parameters.imt.interfered_with:
             self.results.system_inr.extend(self.system.inr.tolist())
             self.results.system_inr_scaled.extend([self.system.inr + 10*math.log10(self.param_system.inr_scaling)])
-            if self.system.station_type is StationType.RAS:
+            if (self.system.station_type is StationType.RAS) or (self.system.station_type is StationType.FSS_ES):
                 self.results.system_pfd.extend([self.system.pfd])
                 self.results.system_ul_interf_power.extend([self.system.rx_interference])
 
