@@ -30,9 +30,9 @@ class AntennaF1245(Antenna):
         self.phi_r = 12.02 * math.pow(self.d_lmbda, -0.6)
 
     def calculate_gain(self, *args, **kwargs) -> np.array:
-        phi_vec = np.absolute(kwargs["phi_vec"])
-        theta_vec = np.absolute(kwargs["theta_vec"])
-        beams_l = np.absolute(kwargs["beams_l"])
+        phi_vec = np.array(kwargs["phi_vec"])
+        theta_vec = np.array(kwargs["theta_vec"])
+        beams_l = np.array(kwargs["beams_l"])
         
         off_axis = self.calculate_off_axis_angle(phi_vec,theta_vec)
 
