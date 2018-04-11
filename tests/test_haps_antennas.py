@@ -177,6 +177,51 @@ class SimulationUplinkTest(unittest.TestCase):
                                       [ 35.04, 50.00],
                                       [ 35.04, 50.00]]),
                             atol=1e-2)
+    
+    def test_simulation_1bs_4ue_es(self):
+        self.param.imt.num_clusters = 1
+        self.param.imt.ue_k = 4
+        self.param.imt.ue_k_m = 1
+        
+        self.param.general.system = "FSS_ES"
+
+        self.simulation = SimulationUplink(self.param, "")
+        self.simulation.initialize()
+
+        self.simulation.bs_power_gain = 0
+        self.simulation.ue_power_gain = 0
+
+        random_number_gen = np.random.RandomState()
+
+        self.simulation.bs = StationFactory.generate_imt_base_stations(self.param.imt,
+                                                                       self.param.antenna_imt,
+                                                                       self.simulation.topology,
+                                                                       random_number_gen)
+        self.simulation.bs.antenna = np.array([AntennaOmni(1)])
+        self.simulation.bs.active = np.ones(1, dtype=bool)
+
+        self.simulation.ue = StationFactory.generate_imt_ue(self.param.imt,
+                                                            self.param.antenna_imt,
+                                                            self.simulation.topology,
+                                                            random_number_gen)
+        self.simulation.ue.x = np.array([ 100,    0,-100,   0])
+        self.simulation.ue.y = np.array([   0,  100,   0,-100])
+        
+        self.simulation.ue.active = np.ones(4, dtype=bool)
+
+        # test connection method
+        self.simulation.connect_ue_to_bs()
+        self.simulation.select_ue(random_number_gen)
+        
+        # Test gains
+        gain = self.simulation.calculate_gains(self.simulation.ue,
+                                               self.simulation.bs)
+        npt.assert_allclose(gain,
+                            np.array([[50.00],
+                                      [50.00],
+                                      [50.00],
+                                      [50.00]]),
+                            atol=1e-2)
         
 
 if __name__ == '__main__':
