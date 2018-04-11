@@ -58,7 +58,7 @@ class AntennaRes122(Antenna):
     def calculate_off_axis_angle(self,Az,b):
         Az0 = self.beams_list[0][0]
 
-        a = 90 - self.beams_list[0][1]
+        a = self.beams_list[0][1]
         C = Az0 - Az
 
         off_axis_rad = np.arccos(np.cos(np.radians(a))*np.cos(np.radians(b)) \
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     param_gt.peak_gain = 49.8
     param_gt.diameter = 3
     antenna_gt = AntennaRes122(param,param_gt)
-    antenna_gt.add_beam(0,0)
+    antenna_gt.add_beam(0,90)
 
     gain_gt = antenna_gt.calculate_gain(phi_vec = phi,
                                         theta_vec = theta,
@@ -93,7 +93,7 @@ if __name__ == '__main__':
     param_lt.peak_gain = 36.9
     param_lt.diameter = 0.3
     antenna_lt = AntennaRes122(param,param_lt)
-    antenna_lt.add_beam(0,0)
+    antenna_lt.add_beam(0,90)
     
     gain_lt = antenna_lt.calculate_gain(phi_vec = phi,
                                         theta_vec = theta,
