@@ -20,6 +20,7 @@ from sharc.propagation.propagation_abg import PropagationABG
 from sharc.propagation.propagation_clear_air_452 import PropagationClearAir
 from sharc.propagation.propagation_tvro import PropagationTvro
 from sharc.propagation.propagation_indoor import PropagationIndoor
+from sharc.propagation.propagation_free_space_sf1395 import PropagationFreeSpaceSf1395
 
 class PropagationFactory(object):
 
@@ -33,8 +34,6 @@ class PropagationFactory(object):
             return PropagationUMa(random_number_gen)
         elif channel_model == "UMi":
             return PropagationUMi(random_number_gen)
-        elif channel_model == "CI":
-            return PropagationCloseIn(random_number_gen)
         elif channel_model == "SatelliteSimple":
             return PropagationSatSimple(random_number_gen)
         elif channel_model == "TerrestrialSimple":
@@ -47,6 +46,8 @@ class PropagationFactory(object):
             return PropagationTvro(random_number_gen)
         elif channel_model == "INDOOR":
             return PropagationIndoor(random_number_gen, param.indoor)
+        elif channel_model == "FSPL_SF1395":
+            return PropagationFreeSpaceSf1395(random_number_gen)
         else:
             sys.stderr.write("ERROR\nInvalid channel_model: " + channel_model)
             sys.exit(1)
