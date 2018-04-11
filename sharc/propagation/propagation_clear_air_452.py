@@ -246,7 +246,7 @@ class PropagationClearAir(Propagation):
             numax = max(nu)
 
             kindex = np.nonzero(nu == numax)
-            lt = kindex[-1] + 1
+            lt = kindex[0][-1] + 1
             dlt = d[lt]
             dlr = dtot - dlt
             kindex = np.nonzero(dlr <= dtot -d[ii])
@@ -800,6 +800,7 @@ class PropagationClearAir(Propagation):
         KSI = 0.8
 
         for ii in range(num_dists):
+            print(str(ii))
             [dc, hc, zonec, htg, hrg, Aht, Ahr] = self.closs_corr(f, d[ii,:], h[ii,:], zone, Hte, Hre, ha_t, ha_r, dk_t, dk_r)
             d[ii,:] = dc
             h[ii,:] = hc
