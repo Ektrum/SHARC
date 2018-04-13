@@ -471,7 +471,36 @@ class Simulation(ABC, Observable):
         plt.tight_layout()
         plt.show()
 
-        sys.exit(0)
+#        sys.exit(0)
+        
+    def plot_scenario_haps(self):
+        fig = plt.figure(figsize=(8,8), facecolor='w', edgecolor='k')
+        ax = fig.gca()
+
+        # Plot network topology
+        self.topology.plot(ax)
+
+        # Plot user equipments
+        ue_active = np.where(self.ue.active)[0]
+        ax.scatter(self.ue.x[ue_active], self.ue.y[ue_active], color='r', 
+                   edgecolor="w", linewidth=0.5, label="UE")
+
+        # Plot UE's azimuth
+        d = 0.1 * self.topology.cell_radius
+        for i in ue_active:
+            plt.plot([self.ue.x[i], self.ue.x[i] + d*math.cos(math.radians(self.ue.antenna[i].beams_list[0][0]))],
+                     [self.ue.y[i], self.ue.y[i] + d*math.sin(math.radians(self.ue.antenna[i].beams_list[0][0]))],
+                     'r-')
+
+        plt.axis('image')
+        plt.title("Simulation scenario")
+        plt.xlabel("x-coordinate [m]")
+        plt.ylabel("y-coordinate [m]")
+        plt.legend(loc="upper left", scatterpoints=1)
+        plt.tight_layout()
+        plt.show()
+
+#        sys.exit(0)
 
     @abstractmethod
     def snapshot(self, *args, **kwargs):
