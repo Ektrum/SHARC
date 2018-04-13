@@ -633,7 +633,8 @@ class StationFactory(object):
     @staticmethod
     def get_random_position( num_stas: int, topology: Topology,
                              random_number_gen: np.random.RandomState,
-                             min_dist_to_bs = 0, central_cell = False ):
+                             min_dist_to_bs = 0, central_cell = False,
+                             fixed_number_per_cell = True ):
 
         if topology.num_sectors == 3:
             hexagon_radius = topology.intersite_distance / 3
@@ -671,12 +672,15 @@ class StationFactory(object):
         y = old_x * np.sin(hextant_angle) + y * np.cos(hextant_angle)
 
         # randomly choose a cell
+        num_bs = topology.num_base_stations
+
         if central_cell:
             central_cell_indices = np.where((topology.x == 0) & (topology.y == 0))
             cell = central_cell_indices[0][random_number_gen.random_integers(0, len(central_cell_indices[0]) - 1,
                                                                              num_stas)]
+        elif fixed_number_per_cell:
+            cell = np.remainder( np.arange(num_stas), num_bs)
         else:
-            num_bs = topology.num_base_stations
             cell = random_number_gen.random_integers(0, num_bs - 1, num_stas)
 
         cell_x = topology.x[cell]
@@ -707,7 +711,7 @@ if __name__ == '__main__':
 
     # plot uniform distribution in macrocell scenario
 
-    num_sectors = 3
+    num_sectors = 1
 
     factory = StationFactory()
     topology = TopologyMacrocell(1000, 1, 1)
@@ -720,7 +724,7 @@ if __name__ == '__main__':
             self.ue_height = 3
             self.ue_indoor_percent = 0
             self.ue_k = 1
-            self.ue_k_m = 100
+            self.ue_k_m = 1
             self.bandwidth  = np.random.rand()
             self.ue_noise_figure = np.random.rand()
             self.topology = "MACROCELL"
