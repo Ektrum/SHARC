@@ -29,7 +29,7 @@ class PropagationClearAir(Propagation):
     @staticmethod
     def closs_corr(f, d, h, zone, htg, hrg, ha_t, ha_r, dk_t, dk_r):
         # closs clutter loss correction according to P.452 - 16
-        index1 = 1
+        index1 = 0
         index2 = d.size
 
         htgc = htg
@@ -46,14 +46,12 @@ class PropagationClearAir(Propagation):
             Ffc = 0.25 + 0.375 * (1 + np.tanh(7.5 * (f - 0.5))) # (57a)
             Aht = 10.25 * Ffc * np.exp(-dk) * (1 - np.tanh(6 * (htg / ha - 0.625))) - 0.33 # (57)
 
-            flagAht = 1
-
-            kk = np.nonzero(d >= dk)
+            kk = np.nonzero(d >= dk)[0]
 
             if kk.size:
                 index1 = kk[0]
             else:
-                index1 = d.size
+                index1 = d.size - 1
 
             htgc = ha_t
 
@@ -64,11 +62,9 @@ class PropagationClearAir(Propagation):
             Ffc = 0.25 + 0.375 * (1 + np.tanh(7.5 * (f - 0.5))) # (57a)
             Ahr = 10.25 * Ffc * np.exp(-dk) * (1 - np.tanh(6 * (hrg / ha - 0.625))) - 0.33 # (57)
 
-            flagAhr = 1
-
-            kk = np.nonzero(d <= d[-1] - dk)
+            kk = np.nonzero(d <= d[-1] - dk)[0]
             if kk.size:
-                index2 = kk[-1]
+                index2 = kk[-1] + 1
             else:
                 index2 = 1
 
@@ -77,12 +73,12 @@ class PropagationClearAir(Propagation):
         # Modify the path
 
         if (index2 - index1 < 3): # at least two points between the clutter at Tx and Rx sides
-            error_message = "tl_p452: closs_corr: the sum of clutter nominal distances is larger than the path length."
+            error_message = "p452: closs_corr: the sum of clutter nominal distances is larger than the path length."
             raise ValueError(error_message)
 
-        dc = d[index1-1:index2] - d[index1-1]
-        hc = h[index1-1:index2]
-        zonec = zone[index1-1:index2]
+        dc = d[index1:index2] - d[index1]
+        hc = h[index1:index2]
+        zonec = zone[index1:index2]
 
         return dc, hc, zonec,htgc, hrgc, Aht, Ahr
 
@@ -735,6 +731,9 @@ class PropagationClearAir(Propagation):
         deltaN = np.asarray(es_params.delta_N)
         p = np.asarray(es_params.percentage_p)
 
+        clutter_type_tx = es_params.clutter_type_tx
+        clutter_type_rx = es_params.clutter_type_rx
+
         tx_lat = es_params.tx_lat
         rx_lat = es_params.rx_lat
 
@@ -745,16 +744,94 @@ class PropagationClearAir(Propagation):
         # consider no obstacles profile
         profile_length = 100
         num_dists = d_km.size
-        d = np.empty([num_dists, profile_length])
+        d_all = np.empty([num_dists, profile_length])
         for ii in range(num_dists):
-            d[ii, :] = np.linspace(0,d_km[0][ii],profile_length)
+            d_all[ii, :] = np.linspace(0,d_km[0][ii],profile_length)
 
-        h = np.zeros(d.shape)
+        h_all = np.zeros(d_all.shape)
 
-        ha_t = []
-        ha_r = []
-        dk_t = []
-        dk_r = []
+        if clutter_type_tx.lower() == "none":
+            ha_t = dk_t = []
+        elif clutter_type_tx.lower() == "high-crop fields":
+            ha_t = 4
+            dk_t = 0.1
+        elif clutter_type_tx.lower() == "village center":
+            ha_t = 5
+            dk_t = 0.07
+        elif clutter_type_tx.lower() == "deciduous trees":
+            ha_t = 15
+            dk_t = 0.05
+        elif clutter_type_tx.lower() == "coniferous tree":
+            ha_t = 20
+            dk_t = 0.05
+        elif clutter_type_tx.lower() == "tropical rain forest":
+            ha_t = 20
+            dk_t = 0.03
+        elif clutter_type_tx.lower() == "suburban":
+            ha_t = 9
+            dk_t = 0.025
+        elif clutter_type_tx.lower() == "dense suburban":
+            ha_t = 12
+            dk_t = 0.02
+        elif clutter_type_tx.lower() == "urban":
+            ha_t = 20
+            dk_t = 0.02
+        elif clutter_type_tx.lower() == "dense urban":
+            ha_t = 25
+            dk_t = 0.02
+        elif clutter_type_tx.lower() == "high-rise urban":
+            ha_t = 35
+            dk_t = 0.02
+        elif clutter_type_tx.lower() == "industrial zone":
+            ha_t = 20
+            dk_t = 0.05
+        else:
+            error_message = "p452: unsupported TX clutter type"
+            raise ValueError(error_message)
+
+        if clutter_type_rx.lower() == "none":
+            ha_r = dk_r = []
+        elif clutter_type_rx.lower() == "high-crop fields":
+            ha_r = 4
+            dk_r = 0.1
+        elif clutter_type_rx.lower() == "village center":
+            ha_r = 5
+            dk_r = 0.07
+        elif clutter_type_rx.lower() == "deciduous trees":
+            ha_r = 15
+            dk_r = 0.05
+        elif clutter_type_rx.lower() == "coniferous tree":
+            ha_r = 20
+            dk_r = 0.05
+        elif clutter_type_rx.lower() == "tropical rain forest":
+            ha_r = 20
+            dk_r = 0.03
+        elif clutter_type_rx.lower() == "suburban":
+            ha_r = 9
+            dk_r = 0.025
+        elif clutter_type_rx.lower() == "dense suburban":
+            ha_r = 12
+            dk_r = 0.02
+        elif clutter_type_rx.lower() == "urban":
+            ha_r = 20
+            dk_r = 0.02
+        elif clutter_type_rx.lower() == "dense urban":
+            ha_r = 25
+            dk_r = 0.02
+        elif clutter_type_rx.lower() == "high-rise urban":
+            ha_r = 35
+            dk_r = 0.02
+        elif clutter_type_rx.lower() == "industrial zone":
+            ha_r = 20
+            dk_r = 0.05
+        else:
+            error_message = "p452: unsupported TX clutter type"
+            raise ValueError(error_message)
+
+        ha_t = np.array(ha_t)
+        dk_t = np.array(dk_t)
+        ha_r = np.array(ha_r)
+        dk_r = np.array(dk_r)
 
         # Compute the path profile parameters
         # Path center latitude
@@ -770,17 +847,17 @@ class PropagationClearAir(Propagation):
         for index in range(num_dists):
 
             zone_r = 12
-            dtm[index] = self.longest_cont_dist(d[index,:], zone, zone_r)
+            dtm[index] = self.longest_cont_dist(d_all[index,:], zone, zone_r)
 
             zone_r = 2
-            dlm[index] = self.longest_cont_dist(d[index,:], zone, zone_r)
+            dlm[index] = self.longest_cont_dist(d_all[index,:], zone, zone_r)
 
         #compute beta0
         b0 = self.beta0(phi_path, dtm, dlm)
         [ae, ab] = self.earth_rad_eff(deltaN)
 
         # Compute the path fraction over sea
-        omega = self.path_fraction(d.transpose(), zone, 3)
+        omega = self.path_fraction(d_all.transpose(), zone, 3)
 
         # Modify the path according to Section 4.5.4, Step 1 and compute clutter losses
         # only if not isempty ha_t and ha_r
@@ -800,15 +877,15 @@ class PropagationClearAir(Propagation):
         KSI = 0.8
 
         for ii in range(num_dists):
-            print(str(ii))
-            [dc, hc, zonec, htg, hrg, Aht, Ahr] = self.closs_corr(f, d[ii,:], h[ii,:], zone, Hte, Hre, ha_t, ha_r, dk_t, dk_r)
-            d[ii,:] = dc
-            h[ii,:] = hc
+
+            [dc, hc, zonec, htg, hrg, Aht, Ahr] = self.closs_corr(f, d_all[ii,:], h_all[ii,:], zone, Hte, Hre, ha_t, ha_r, dk_t, dk_r)
+            d = dc
+            h = hc
 
             [hst, hsr, hstd, hsrd, hte,hre, hm, dlt,
-             dlr, theta_t, theta_r, theta, pathtype] = self.smooth_earth_heights(d[ii,:], h[ii,:], htg, hrg, ae, f)
+             dlr, theta_t, theta_r, theta, pathtype] = self.smooth_earth_heights(d, h, htg, hrg, ae, f)
 
-            dtot = d[ii,-1] - d[ii,0]
+            dtot = d[-1] - d[0]
 
             # Tx and Rx antenna heights above mean sea level amsl(m)
             hts = hc[0] + htg
@@ -817,12 +894,12 @@ class PropagationClearAir(Propagation):
             # Find the intermediate profile point with the highest slope of the line
             # from the transmitter to the point
 
-            if len(d[ii]) < 4:
+            if len(d) < 4:
                 error_message = "tl_p452: path profile requires at least 4 points."
                 raise ValueError(error_message)
 
-            di = d[ii,1: -1]
-            hi = h[ii,1: -1]
+            di = d[1: -1]
+            hi = h[1: -1]
 
             Stim = max((hi + 500 * Ce * di * (dtot - di) - hts) / di)
 
@@ -843,7 +920,7 @@ class PropagationClearAir(Propagation):
 
             [Lbfsg, Lb0p, Lb0b] = self.pl_los(dtot, f, p, b0[ii], omega[ii], T, Ph, dlt, dlr)
 
-            [Ldp, Ld50] = self.dl_p(d[ii], h[ii], hts, hrs, hstd, hsrd, f, omega[ii], p, b0[ii], deltaN)
+            [Ldp, Ld50] = self.dl_p(d, h, hts, hrs, hstd, hsrd, f, omega[ii], p, b0[ii], deltaN)
 
             # The median basic transmission loss associated with diffraction Eq (43)
             Lbd50 = Lbfsg + Ld50
@@ -893,7 +970,7 @@ class PropagationClearAir(Propagation):
                 error_message = "invalid polarization"
                 raise ValueError(error_message)
 
-        if es_params.clutter_loss:
+        if es_params.clutter_loss_p2108:
             clutter_loss = self.clutter.get_loss(frequency=f * 1000,
                                                  distance=d_km * 1000,
                                                  station_type=StationType.FSS_ES)

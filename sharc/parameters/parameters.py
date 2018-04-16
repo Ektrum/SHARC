@@ -240,7 +240,9 @@ class Parameters(object):
         self.fss_es.tx_lat = config.getfloat("FSS_ES", "tx_lat")
         self.fss_es.rx_lat = config.getfloat("FSS_ES", "rx_lat")
         self.fss_es.polarization = config.get("FSS_ES", "polarization")
-        self.fss_es.clutter_loss = config.getboolean("FSS_ES", "clutter_loss")
+        self.fss_es.clutter_type_tx = config.get("FSS_ES", "clutter_type_tx")
+        self.fss_es.clutter_type_rx = config.get("FSS_ES", "clutter_type_rx")
+        self.fss_es.clutter_loss_p2108 = config.getboolean("FSS_ES", "clutter_loss_p2108")
 
         #######################################################################
         # Fixed wireless service
@@ -345,4 +347,6 @@ class Parameters(object):
         self.ras.tx_lat = config.getfloat("RAS", "tx_lat")
         self.ras.rx_lat = config.getfloat("RAS", "rx_lat")
         self.ras.polarization = config.get("RAS", "polarization")
-        self.ras.clutter_loss = config.getboolean("RAS", "clutter_loss")
+        self.ras.clutter_type_tx = config.get("RAS", "clutter_type_tx")
+        self.ras.clutter_type_rx = config.get("RAS", "clutter_type_rx")
+        self.ras.clutter_loss_p2108 = config.getboolean("RAS", "clutter_loss_p2108")
