@@ -24,7 +24,8 @@ class TopologyMacrocell(Topology):
 
     ALLOWED_NUM_CLUSTERS = [1, 7]
 
-    def __init__(self, intersite_distance: float, num_clusters: int, number_of_sectors = 3):
+    def __init__(self, intersite_distance: float, num_clusters: int, number_of_sectors = 3,
+                 beamwidth = -1, beams_dist = 0, bs_height = 0):
         """
         Constructor method that sets the parameters and already calls the
         calculation methods.
@@ -38,14 +39,20 @@ class TopologyMacrocell(Topology):
             error_message = "invalid number of clusters ({})".format(num_clusters)
             raise ValueError(error_message)
 
-        if number_of_sectors not in [1, 3]:
+        if number_of_sectors not in [1, 3] and beamwidth < 0:
             error_message = "invalid number of sectors ({})".format(num_clusters)
             raise ValueError(error_message)
+
+        if number_of_sectors == 1:
+            beamwidth = -1
 
         cell_radius = intersite_distance*2/3
         super().__init__(intersite_distance, cell_radius)
         self.num_clusters = num_clusters
         self.num_sectors = number_of_sectors
+        self.beamwidth = beamwidth
+        self.beams_dist = beams_dist
+        self.height = bs_height
 
     def calculate_coordinates(self, random_number_gen=np.random.RandomState()):
         """
@@ -81,12 +88,40 @@ class TopologyMacrocell(Topology):
             self.x = np.repeat(self.x, self.num_sectors)
             self.y = np.repeat(self.y, self.num_sectors)
 
-            if self.num_sectors == 3:
+            if self.num_sectors == 3 and self.beamwidth < 0 :
                 self.azimuth = np.tile(self.AZIMUTH, 19*self.num_clusters)
                 self.elevation = np.tile(self.ELEVATION, 3*19*self.num_clusters)
-            else:
+            elif self.beamwidth < 0:
                 self.azimuth = np.zeros(19*self.num_clusters)
                 self.elevation = np.tile(-90, 19 * self.num_clusters)
+            else:
+                # calculate beams
+                max_angle = np.arctan(self.intersite_distance / 2 / self.height) - self.beamwidth / 180 * np.pi
+                max_dist = self.height * np.tan(max_angle)
+
+                self.elevation = self.azimuth = np.empty(self.num_sectors*19*self.num_clusters )
+
+                for cell_idx in range(19 * self.num_clusters):
+                    done = False
+                    while not done:
+                        done = True
+
+                        beam_x = random_number_gen.rand(self.num_sectors) * 2*max_dist - max_dist
+                        beam_y = random_number_gen.rand(self.num_sectors) * 2*max_dist - max_dist
+
+                        if any(beam_x**2 + beam_y**2 > max_dist ** 2):
+                            done = False
+
+                        for ii in range(self.num_sectors):
+                            for jj in range(ii+1, self.num_sectors):
+                                if (beam_x[ii] - beam_x[jj])**2 + (beam_y[ii] - beam_y[jj])**2 < self.beams_dist ** 2:
+                                    done = False
+
+                    azimuth_deg = np.arctan2(beam_y, beam_x) * 180 / np.pi
+                    elevation_deg = -np.arctan(self.height/np.sqrt(beam_x**2 + beam_y**2)) * 180 / np.pi
+
+                    self.azimuth[cell_idx*self.num_sectors:(cell_idx+1)*self.num_sectors] = azimuth_deg
+                    self.elevation[cell_idx * self.num_sectors:(cell_idx + 1) * self.num_sectors] = elevation_deg
 
             # In the end, we have to update the number of base stations
             self.num_base_stations = len(self.x)
