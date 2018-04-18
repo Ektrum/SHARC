@@ -19,8 +19,6 @@ from sharc.parameters.parameters import Parameters
 from sharc.propagation.propagation import Propagation
 from sharc.station_manager import StationManager
 from sharc.results import Results
-from sharc.propagation.propagation_factory import PropagationFactory
-
 
 class Simulation(ABC, Observable):
 
@@ -48,6 +46,11 @@ class Simulation(ABC, Observable):
         self.adjacent_channel = self.parameters.general.enable_adjacent_channel
 
         self.topology = TopologyFactory.createTopology(self.parameters)
+
+        if self.parameters.imt.topology == "HAPS_CPE":
+            self.fixed_bs_beam = True
+        else:
+            self.fixed_bs_beam = False
 
         self.bs_power_gain = 0
         self.ue_power_gain = 0
@@ -280,8 +283,12 @@ class Simulation(ABC, Observable):
                 self.ue.active[self.link[bs]] = np.ones(K, dtype=bool)
                 for ue in self.link[bs]:
                     # add beam to BS antennas
-                    self.bs.antenna[bs].add_beam(self.bs_to_ue_phi[bs,ue],
-                                             self.bs_to_ue_theta[bs,ue])
+                    if self.fixed_bs_beam:
+                        self.bs.antenna[bs].add_beam(self.topology.azimuth[bs],
+                                                     90 - self.topology.elevation[bs])
+                    else:
+                        self.bs.antenna[bs].add_beam(self.bs_to_ue_phi[bs,ue],
+                                                     self.bs_to_ue_theta[bs,ue])
                     # add beam to UE antennas
                     self.ue.antenna[ue].add_beam(self.bs_to_ue_phi[bs,ue] - 180,
                                              180 - self.bs_to_ue_theta[bs,ue])
