@@ -96,10 +96,11 @@ class TopologyMacrocell(Topology):
                 self.elevation = np.tile(-90, 19 * self.num_clusters)
             else:
                 # calculate beams
-                max_angle = np.arctan(self.intersite_distance / 2 / self.height) - self.beamwidth / 180 * np.pi
+                max_angle = np.arctan(self.intersite_distance / 2 / self.height) - np.deg2rad(self.beamwidth/2)
                 max_dist = self.height * np.tan(max_angle)
 
-                self.elevation = self.azimuth = np.empty(self.num_sectors*19*self.num_clusters )
+                self.elevation = np.empty(self.num_sectors*19*self.num_clusters )
+                self.azimuth = np.empty(self.num_sectors*19*self.num_clusters )
 
                 for cell_idx in range(19 * self.num_clusters):
                     done = False
@@ -117,8 +118,8 @@ class TopologyMacrocell(Topology):
                                 if (beam_x[ii] - beam_x[jj])**2 + (beam_y[ii] - beam_y[jj])**2 < self.beams_dist ** 2:
                                     done = False
 
-                    azimuth_deg = np.arctan2(beam_y, beam_x) * 180 / np.pi
-                    elevation_deg = -np.arctan(self.height/np.sqrt(beam_x**2 + beam_y**2)) * 180 / np.pi
+                    azimuth_deg = np.rad2deg(np.arctan2(beam_y, beam_x))
+                    elevation_deg = -np.rad2deg(np.arctan(self.height/np.sqrt(beam_x**2 + beam_y**2)))
 
                     self.azimuth[cell_idx*self.num_sectors:(cell_idx+1)*self.num_sectors] = azimuth_deg
                     self.elevation[cell_idx * self.num_sectors:(cell_idx + 1) * self.num_sectors] = elevation_deg
@@ -133,13 +134,15 @@ class TopologyMacrocell(Topology):
         # create the hexagons
         if self.num_sectors == 3:
             r = self.intersite_distance/3
-        elif self.num_sectors == 1:
+            azimuth = self.azimuth
+        else :
             r = self.intersite_distance/np.sqrt(3)
+            azimuth = np.zeros(self.x.size)
 
-        for x, y, az in zip(self.x, self.y, self.azimuth):
+        for x, y, az in zip(self.x, self.y, azimuth):
             if self.num_sectors == 3:
                 angle = int(az - 60)
-            elif self.num_sectors == 1:
+            else:
                 x = x - self.intersite_distance/2
                 y = y - r/2
                 angle = int(az - 30)
