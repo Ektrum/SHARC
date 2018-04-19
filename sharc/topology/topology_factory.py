@@ -25,8 +25,14 @@ class TopologyFactory(object):
             return TopologyHotspot(parameters.hotspot, parameters.imt.intersite_distance, parameters.imt.num_clusters)
         elif parameters.imt.topology == "INDOOR":
             return TopologyIndoor(parameters.indoor)
-        elif parameters.imt.topology == "HAPS":
-            return TopologyMacrocell(parameters.imt.intersite_distance, parameters.imt.num_clusters, 1)
+        elif parameters.imt.topology == "HAPS_GTW":
+            par = parameters.imt
+            return TopologyMacrocell(par.intersite_distance, par.num_clusters, 1)
+        elif parameters.imt.topology == "HAPS_CPE":
+            par = parameters.imt
+            return TopologyMacrocell(par.intersite_distance, par.num_clusters,
+                                     par.number_of_haps_beams, par.haps_beamwidth,
+                                     par.min_dist_between_beams, par.bs_height)
         else:
-            sys.stderr.write("ERROR\nInvalid topology: " + parameters.imt.topology)
+            sys.stderr.write("ERROR\nTopologyFactory: Invalid topology: " + parameters.imt.topology)
             sys.exit(1)

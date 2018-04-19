@@ -67,6 +67,9 @@ class Parameters(object):
         self.imt.topology                = config.get("IMT", "topology")
         self.imt.num_macrocell_sites     = config.getint("IMT", "num_macrocell_sites")
         self.imt.num_clusters            = config.getint("IMT", "num_clusters")
+        self.imt.number_of_haps_beams    = config.getint("IMT", "number_of_haps_beams")
+        self.imt.haps_beamwidth          = config.getfloat("IMT", "haps_beamwidth")
+        self.imt.min_dist_between_beams  = config.getfloat("IMT", "min_dist_between_beams")
         self.imt.intersite_distance      = config.getfloat("IMT", "intersite_distance")
         self.imt.minimum_separation_distance_bs_ue = config.getfloat("IMT", "minimum_separation_distance_bs_ue")
         self.imt.interfered_with         = config.getboolean("IMT", "interfered_with")
@@ -244,7 +247,9 @@ class Parameters(object):
         self.fss_es.tx_lat = config.getfloat("FSS_ES", "tx_lat")
         self.fss_es.rx_lat = config.getfloat("FSS_ES", "rx_lat")
         self.fss_es.polarization = config.get("FSS_ES", "polarization")
-        self.fss_es.clutter_loss = config.getboolean("FSS_ES", "clutter_loss")
+        self.fss_es.clutter_type_tx = config.get("FSS_ES", "clutter_type_tx")
+        self.fss_es.clutter_type_rx = config.get("FSS_ES", "clutter_type_rx")
+        self.fss_es.clutter_loss_p2108 = config.getboolean("FSS_ES", "clutter_loss_p2108")
 
         #######################################################################
         # Fixed wireless service
@@ -349,4 +354,6 @@ class Parameters(object):
         self.ras.tx_lat = config.getfloat("RAS", "tx_lat")
         self.ras.rx_lat = config.getfloat("RAS", "rx_lat")
         self.ras.polarization = config.get("RAS", "polarization")
-        self.ras.clutter_loss = config.getboolean("RAS", "clutter_loss")
+        self.ras.clutter_type_tx = config.get("RAS", "clutter_type_tx")
+        self.ras.clutter_type_rx = config.get("RAS", "clutter_type_rx")
+        self.ras.clutter_loss_p2108 = config.getboolean("RAS", "clutter_loss_p2108")

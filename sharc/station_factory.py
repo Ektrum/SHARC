@@ -8,6 +8,7 @@ Created on Thu Mar 23 16:37:32 2017
 import numpy as np
 import sys
 import math
+from matplotlib import pyplot as plt
 
 from sharc.support.enumerations import StationType
 from sharc.parameters.parameters import Parameters
@@ -132,12 +133,38 @@ class StationFactory(object):
 
         if param.ue_distribution_type.upper() == "UNIFORM":
 
-            if not (type(topology) is TopologyMacrocell):
-                sys.stderr.write("ERROR\nUniform UE distribution is currently supported only with Macrocell topology")
-                sys.exit(1)
+            if param.topology.upper() == "HAPS_CPE":
+                [ue_x, ue_y, theta, distance] = StationFactory.get_random_position_beam(num_ue, topology,
+                                                                                        random_number_gen,
+                                                                                        param.haps_beamwidth)
+                # # plot
+                # fig = plt.figure()
+                # ax = fig.add_subplot(1, 1, 1)
+                #
+                # topology.plot(ax)
+                #
+                # for (x, y, az_plot, elev_plot) in zip(topology.x, topology.y,
+                #                                       topology.azimuth, topology.elevation):
+                #
+                #     beam_dist = np.tan(np.pi / 2 + np.deg2rad(elev_plot)) * topology.height
+                #     beam_x = x + beam_dist * np.cos(np.deg2rad(az_plot))
+                #     beam_y = y + beam_dist * np.sin(np.deg2rad(az_plot))
+                #     beam_radius = np.tan(np.pi / 2 - np.deg2rad(-elev_plot - param.haps_beamwidth / 2)) \
+                #                   * topology.height - beam_dist
+                #     circle = plt.Circle((beam_x,beam_y), beam_radius, fill=None, edgecolor='k')
+                #     ax = fig.gca()
+                #     ax.add_patch(circle)
+                #
+                # plt.plot(ue_x, ue_y, '.')
+                # plt.show()
 
-            [ue_x, ue_y, theta, distance] = StationFactory.get_random_position(num_ue, topology, random_number_gen,
-                                                                               param.minimum_separation_distance_bs_ue )
+            else:
+                if not (type(topology) is TopologyMacrocell):
+                    sys.stderr.write("ERROR\nUniform UE distribution is currently supported only with Macrocell topology")
+                    sys.exit(1)
+
+                [ue_x, ue_y, theta, distance] = StationFactory.get_random_position(num_ue, topology, random_number_gen,
+                                                                                   param.minimum_separation_distance_bs_ue )
             psi = np.degrees(np.arctan((param.bs_height - param.ue_height) / distance))
 
             imt_ue.azimuth = (azimuth + theta + np.pi/2)
@@ -532,10 +559,6 @@ class StationFactory(object):
         haps = StationManager(num_haps)
         haps.station_type = StationType.HAPS
 
-#        d = intersite_distance
-#        h = (d/3)*math.sqrt(3)/2
-#        haps.x = np.array([0, 7*d/2, -d/2, -4*d, -7*d/2, d/2, 4*d])
-#        haps.y = np.array([0, 9*h, 15*h, 6*h, -9*h, -15*h, -6*h])
         haps.x = np.array([0])
         haps.y = np.array([0])
 
@@ -706,8 +729,41 @@ class StationFactory(object):
         return x, y, theta, distance
 
 
+    @staticmethod
+    def get_random_position_beam(num_stas: int, topology: Topology,
+                            random_number_gen: np.random.RandomState,
+                            beamwidth_deg: float):
+
+        num_bs = topology.num_base_stations
+        cell = np.remainder(np.arange(num_stas), num_bs)
+        azimuth = topology.azimuth[cell]
+        elevation = topology.elevation[cell]
+        platform_x = topology.x[cell]
+        platform_y = topology.y[cell]
+        beam_dist = np.tan(np.pi/2 + np.deg2rad(elevation)) * topology.height
+        beam_x = platform_x + beam_dist * np.cos(np.deg2rad(azimuth))
+        beam_y = platform_y + beam_dist * np.sin(np.deg2rad(azimuth))
+        beam_radius = np.tan(np.pi/2 - np.deg2rad(-elevation - beamwidth_deg/2)) * topology.height - beam_dist
+
+        x = np.infty * np.ones(num_stas)
+        y = np.infty * np.ones(num_stas)
+
+        while np.any((x-beam_x)**2 + (y-beam_y)**2 > beam_radius**2):
+            idx = (x-beam_x)**2 + (y-beam_y)**2 > beam_radius**2
+            x[idx] = beam_x[idx] + random_number_gen.rand(np.count_nonzero(idx)) * 2*beam_radius[idx] - beam_radius[idx]
+            y[idx] = beam_y[idx] + random_number_gen.rand(np.count_nonzero(idx)) * 2*beam_radius[idx] - beam_radius[idx]
+
+        # calculate UE azimuth wrt serving BS
+        theta = np.arctan2(y - platform_y, x - platform_x)
+
+        # calculate elevation angle
+        # psi is the vertical angle of the UE wrt the serving BS
+        distance = np.sqrt((platform_x - x) ** 2 + (platform_y - y) ** 2)
+
+        return x, y, theta, distance
+
+
 if __name__ == '__main__':
-    from matplotlib import pyplot as plt
 
     # plot uniform distribution in macrocell scenario
 
@@ -724,7 +780,7 @@ if __name__ == '__main__':
             self.ue_height = 3
             self.ue_indoor_percent = 0
             self.ue_k = 1
-            self.ue_k_m = 1
+            self.ue_k_m = 3
             self.bandwidth  = np.random.rand()
             self.ue_noise_figure = np.random.rand()
             self.topology = "MACROCELL"
