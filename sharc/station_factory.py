@@ -652,11 +652,8 @@ class StationFactory(object):
 
         if topology.num_sectors == 3:
             hexagon_radius = topology.intersite_distance / 3
-        elif topology.num_sectors == 1:
-            hexagon_radius = topology.intersite_distance / np.sqrt(3)
         else:
-            sys.stderr.write("ERROR\nnumber of sectors must be either one or three")
-            sys.exit(1)
+            hexagon_radius = topology.intersite_distance / np.sqrt(3)
 
         min_dist_ok = False
 
