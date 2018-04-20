@@ -7,6 +7,7 @@ Created on Fri Mar  2 14:28:25 2018
 
 import numpy as np
 from scipy.integrate import dblquad
+import os
 
 from sharc.antenna.antenna_beamforming_imt import AntennaBeamformingImt
 from sharc.support.named_tuples import AntennaPar
@@ -75,6 +76,7 @@ class BeamformingNormalizer(object):
                 correction factor
             file_name (str): name of file to which save the correction matrix
         """
+
         # Create antenna object
         azi = 0 # Antenna azimuth: 0 degrees for simplicity
         ele = 0 # Antenna elevation: 0 degrees as well
@@ -85,23 +87,36 @@ class BeamformingNormalizer(object):
         correction_factor_co = np.zeros((len(self.phi_vals_deg),len(self.theta_vals_deg)))
         error_co = np.empty((len(self.phi_vals_deg),len(self.theta_vals_deg)), dtype=tuple)
 
+        phi_vals_deg = self.phi_vals_deg
+        num_phi = 0
+
+        if os.path.exists(file_name):
+            data = np.load(file_name)
+            data_dict = {key: data[key] for key in data}
+            data.close()
+
+            if (par == data_dict["parameters"]).all() and self.resolution_deg == data_dict["resolution"]:
+                s_correction_factor_co = data_dict["correction_factor_co_channel"]
+                num_phi = s_correction_factor_co.shape[0]
+                correction_factor_co[0:num_phi,:] = s_correction_factor_co
+                error_co[0:num_phi,:] = data_dict["error_co_channel"]
+
+                phi_vals_deg = np.arange(self.phi_min_deg + num_phi * self.resolution_deg,
+                                         self.phi_max_deg,self.resolution_deg)
+
+        correction_factor_adj, error_adj = self.calculate_correction_factor(0, 0, False)
+
         # Loop throug all the possible beams
-        for phi_idx, phi in enumerate(self.phi_vals_deg):
+        for phi_idx, phi in enumerate(phi_vals_deg):
             for theta_idx, theta in enumerate(self.theta_vals_deg):
                 s = '\tphi = ' + str(phi) + ', theta = ' + str(theta)
                 print(s)
-                correction_factor_co[phi_idx,theta_idx], error_co[phi_idx,theta_idx] = self.calculate_correction_factor(phi,theta,True)
+                correction_factor_co[num_phi + phi_idx,theta_idx], \
+                error_co[num_phi + phi_idx,theta_idx] = self.calculate_correction_factor(phi,theta,True)
 
-
-        correction_factor_adj, error_adj = self.calculate_correction_factor(0,0,False)
-
-        # Save in file
-        self._save_files(correction_factor_co,
-                         error_co,
-                         correction_factor_adj,
-                         error_adj,
-                         par,
-                         file_name)
+            # Save in file
+            self._save_files(correction_factor_co[0:phi_idx+1,:], error_co[0:phi_idx+1,:], correction_factor_adj,
+                             error_adj, par, file_name)
 
     def calculate_correction_factor(self, phi_beam: float, theta_beam: float, c_chan: bool):
         """
