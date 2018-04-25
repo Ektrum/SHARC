@@ -62,7 +62,8 @@ class TopologyMacrocell(Topology):
         static_base_stations to True to avoid unnecessary calculations.
         """
         if not self.static_base_stations:
-            self.static_base_stations = True
+
+            #self.static_base_stations = True
 
             d = self.intersite_distance
             h = (d/3)*math.sqrt(3)/2
@@ -155,11 +156,11 @@ class TopologyMacrocell(Topology):
             ax.add_patch(sector)
 
         # macro cell base stations
-        ax.scatter(self.x, self.y, color='k', edgecolor="k", linewidth=4, label="Macro cell")
+        ax.scatter(self.x, self.y, color='k', edgecolor="k", linewidth=4, label="HAPS platforms")
 
 
 if __name__ == '__main__':
-    intersite_distance = 500
+    intersite_distance = 100
     num_clusters = 1
     num_sectors = 1
 
@@ -172,9 +173,9 @@ if __name__ == '__main__':
     topology.plot(ax)
 
     plt.axis('image')
-    plt.title("Macro cell topology")
-    plt.xlabel("x-coordinate [m]")
-    plt.ylabel("y-coordinate [m]")
+    plt.title("HAPS topology")
+    plt.xlabel("x-coordinate [km]")
+    plt.ylabel("y-coordinate [km]")
     plt.tight_layout()
     plt.show()
 
