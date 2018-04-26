@@ -284,8 +284,8 @@ class Simulation(ABC, Observable):
                 for ue in self.link[bs]:
                     # add beam to BS antennas
                     if self.fixed_bs_beam:
-                        self.bs.antenna[bs].add_beam(self.topology.azimuth[bs],
-                                                     90 - self.topology.elevation[bs])
+                        self.bs.antenna[bs].add_beam(self.topology.beam_azimuth[bs],
+                                                     90 - self.topology.beam_elevation[bs])
                     else:
                         self.bs.antenna[bs].add_beam(self.bs_to_ue_phi[bs,ue],
                                                      self.bs_to_ue_theta[bs,ue])

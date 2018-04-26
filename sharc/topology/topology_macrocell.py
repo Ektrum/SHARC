@@ -99,9 +99,11 @@ class TopologyMacrocell(Topology):
                 # calculate beams
                 max_angle = np.arctan(self.intersite_distance / 2 / self.height) - np.deg2rad(self.beamwidth/2)
                 max_dist = self.height * np.tan(max_angle)
+                self.azimuth = np.zeros(self.num_sectors*19*self.num_clusters)
+                self.elevation = np.tile(-90, 19 * self.num_sectors* self.num_clusters)
 
-                self.elevation = np.empty(self.num_sectors*19*self.num_clusters )
-                self.azimuth = np.empty(self.num_sectors*19*self.num_clusters )
+                self.beam_azimuth = np.empty(self.num_sectors*19*self.num_clusters )
+                self.beam_elevation = np.empty(self.num_sectors * 19 * self.num_clusters)
 
                 for cell_idx in range(19 * self.num_clusters):
                     done = False
@@ -122,8 +124,8 @@ class TopologyMacrocell(Topology):
                     azimuth_deg = np.rad2deg(np.arctan2(beam_y, beam_x))
                     elevation_deg = -np.rad2deg(np.arctan(self.height/np.sqrt(beam_x**2 + beam_y**2)))
 
-                    self.azimuth[cell_idx*self.num_sectors:(cell_idx+1)*self.num_sectors] = azimuth_deg
-                    self.elevation[cell_idx * self.num_sectors:(cell_idx + 1) * self.num_sectors] = elevation_deg
+                    self.beam_azimuth[cell_idx*self.num_sectors:(cell_idx+1)*self.num_sectors] = azimuth_deg
+                    self.beam_elevation[cell_idx * self.num_sectors:(cell_idx + 1) * self.num_sectors] = elevation_deg
 
             # In the end, we have to update the number of base stations
             self.num_base_stations = len(self.x)
