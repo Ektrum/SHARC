@@ -142,20 +142,23 @@ class StationFactory(object):
                 # ax = fig.add_subplot(1, 1, 1)
                 #
                 # topology.plot(ax)
-                #
                 # for (x, y, az_plot, elev_plot) in zip(topology.x, topology.y,
-                #                                       topology.azimuth, topology.elevation):
+                #                                        topology.azimuth, topology.elevation):
                 #
-                #     beam_dist = np.tan(np.pi / 2 + np.deg2rad(elev_plot)) * topology.height
-                #     beam_x = x + beam_dist * np.cos(np.deg2rad(az_plot))
-                #     beam_y = y + beam_dist * np.sin(np.deg2rad(az_plot))
-                #     beam_radius = np.tan(np.pi / 2 - np.deg2rad(-elev_plot - param.haps_beamwidth / 2)) \
-                #                   * topology.height - beam_dist
-                #     circle = plt.Circle((beam_x,beam_y), beam_radius, fill=None, edgecolor='k')
-                #     ax = fig.gca()
-                #     ax.add_patch(circle)
+                #      beam_dist = np.tan(np.pi / 2 + np.deg2rad(elev_plot)) * topology.height
+                #      beam_x = x + beam_dist * np.cos(np.deg2rad(az_plot))
+                #      beam_y = y + beam_dist * np.sin(np.deg2rad(az_plot))
+                #      beam_radius = np.tan(np.pi / 2 - np.deg2rad(-elev_plot - param.haps_beamwidth / 2)) \
+                #                    * topology.height - beam_dist
+                #      circle = plt.Circle((beam_x,beam_y), beam_radius, fill=None, edgecolor='k')
+                #      ax = fig.gca()
+                #      ax.add_patch(circle)
                 #
-                # plt.plot(ue_x, ue_y, '.')
+                # plt.plot(ue_x, ue_y, '.', label="CPEs")
+                # plt.title('HAPS topology')
+                # plt.xlabel('x-coordinates[m]')
+                # plt.ylabel('y-coordinates[m]')
+                # plt.legend()
                 # plt.show()
 
             else:
@@ -732,9 +735,10 @@ class StationFactory(object):
                             beamwidth_deg: float):
 
         num_bs = topology.num_base_stations
-        cell = np.remainder(np.arange(num_stas), num_bs)
-        azimuth = topology.azimuth[cell]
-        elevation = topology.elevation[cell]
+        cell = np.floor(np.arange(num_stas)/ int(num_stas/num_bs))
+        cell = cell.astype(int)
+        azimuth = topology.beam_azimuth[cell]
+        elevation = topology.beam_elevation[cell]
         platform_x = topology.x[cell]
         platform_y = topology.y[cell]
         beam_dist = np.tan(np.pi/2 + np.deg2rad(elevation)) * topology.height
@@ -767,7 +771,7 @@ if __name__ == '__main__':
     num_sectors = 1
 
     factory = StationFactory()
-    topology = TopologyMacrocell(1000, 1, 1)
+    topology = TopologyMacrocell(100, 1, 1)
     topology.calculate_coordinates()
 
     class ParamsAux(object):
@@ -777,7 +781,7 @@ if __name__ == '__main__':
             self.ue_height = 3
             self.ue_indoor_percent = 0
             self.ue_k = 1
-            self.ue_k_m = 3
+            self.ue_k_m = 1
             self.bandwidth  = np.random.rand()
             self.ue_noise_figure = np.random.rand()
             self.topology = "MACROCELL"
@@ -825,11 +829,12 @@ if __name__ == '__main__':
     topology.plot(ax)
 
     plt.axis('image')
-    plt.title("Macro cell topology")
-    plt.xlabel("x-coordinate [m]")
-    plt.ylabel("y-coordinate [m]")
+    plt.title("HAPS topology")
+    plt.xlabel("x-coordinate [km]")
+    plt.ylabel("y-coordinate [km]")
 
-    plt.plot(imt_ue.x, imt_ue.y, "*")
+    plt.plot(imt_ue.x, imt_ue.y, "*", label="Gateways")
+    plt.legend()
 
     plt.tight_layout()
     plt.show()
