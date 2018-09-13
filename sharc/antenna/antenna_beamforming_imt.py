@@ -70,6 +70,7 @@ class AntennaBeamformingImt(Antenna):
 
         self.azimuth = azimuth
         self.elevation = elevation
+        self._calculate_rotation_matrix()
 
         self.n_rows = par.n_rows
         self.n_cols = par.n_columns
@@ -263,7 +264,7 @@ class AntennaBeamformingImt(Antenna):
         return gain
 
     def to_local_coord(self,phi: float, theta: float) -> tuple:
-
+        
         phi_rad = np.ravel(np.array([np.deg2rad(phi)]))
         theta_rad = np.ravel(np.array([np.deg2rad(theta)]))
         
@@ -277,6 +278,19 @@ class AntennaBeamformingImt(Antenna):
         lo_theta = np.ravel(np.asarray(np.rad2deg(np.arccos(rotated_points[2]))))
 
         return lo_phi, lo_theta
+    
+    def _calculate_rotation_matrix(self):
+        
+        alpha = np.deg2rad(self.azimuth)
+        beta = np.deg2rad(self.elevation)
+
+        Ry = np.matrix([[ np.cos(beta), 0.0, np.sin(beta)],
+                        [          0.0, 1.0,       0.0],
+                        [-np.sin(beta), 0.0, np.cos(beta)]])
+        Rz = np.matrix([[np.cos(alpha),-np.sin(alpha), 0.0],
+                        [np.sin(alpha), np.cos(alpha), 0.0],
+                        [          0.0,           0.0, 1.0]])
+        self.rotation_mtx = Ry*np.transpose(Rz)
 
 ###############################################################################
 class PlotAntennaPattern(object):
