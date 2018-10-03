@@ -146,6 +146,11 @@ class Simulation(ABC, Observable):
 
         self.results = Results(self.parameters_filename, self.parameters.general.overwrite_output)
 
+        if self.parameters.general.system == 'RAS':
+            self.polarization_loss = 0.0
+        else:
+            self.polarization_loss = 3.0
+
     def finalize(self, *args, **kwargs):
         """
         Finalizes the simulation (collect final results, etc...)

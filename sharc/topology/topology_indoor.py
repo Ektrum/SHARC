@@ -111,21 +111,21 @@ class TopologyIndoor(Topology):
                 
         
         # indoor base stations
-        ax.scatter(self.x, self.y, color='k', edgecolor="k", linewidth=2, label="Base station")
+#        ax.scatter(self.x, self.y, color='k', edgecolor="k", linewidth=2, label="Base station")
 
 
 if __name__ == '__main__':
     param = ParametersIndoor()
     param.intersite_distance = 40
-    param.n_rows = 4
-    param.n_colums = 2
+    param.n_rows = 7
+    param.n_colums = 5
     param.street_width = 30
     param.ue_indoor_percent = 0.95
     param.building_class = "TRADITIONAL"
     topology = TopologyIndoor(param)
     topology.calculate_coordinates()
     
-    fig = plt.figure(figsize=(8,8), facecolor='w', edgecolor='k')  # create a figure object
+    fig = plt.figure(figsize=(10,10), facecolor='w', edgecolor='k')  # create a figure object
     ax = fig.add_subplot(1, 1, 1)  # create an axes object in the figure
     
     topology.plot(ax)
