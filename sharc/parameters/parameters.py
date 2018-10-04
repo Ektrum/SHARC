@@ -341,6 +341,10 @@ class Parameters(object):
         self.ras.BOLTZMANN_CONSTANT         = config.getfloat("RAS", "BOLTZMANN_CONSTANT")
         self.ras.EARTH_RADIUS               = config.getfloat("RAS", "EARTH_RADIUS")
         self.ras.SPEED_OF_LIGHT             = config.getfloat("RAS", "SPEED_OF_LIGHT")
+        self.ras.imt_altitude = config.getfloat("RAS", "imt_altitude")
+        self.ras.imt_lat_deg = config.getfloat("RAS", "imt_lat_deg")
+        self.ras.imt_long_diff_deg = config.getfloat("RAS", "imt_long_diff_deg")
+        self.ras.season = config.get("RAS", "season")
 
         # P452 parameters
         self.ras.atmospheric_pressure = config.getfloat("RAS", "atmospheric_pressure")
