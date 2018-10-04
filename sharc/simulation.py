@@ -188,7 +188,7 @@ class Simulation(ABC, Observable):
             elevation_angles = np.transpose(station_b.get_elevation(station_a))
         elif station_a.station_type is StationType.FSS_ES or \
                 station_a.station_type is StationType.RAS:
-            elevation_angles = station_b.get_elevation_angle(station_a)
+            elevation_angles = station_b.get_elevation_angle(station_a, self.param_system)
         else:
             elevation_angles = None
 

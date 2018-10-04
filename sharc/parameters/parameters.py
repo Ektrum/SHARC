@@ -345,6 +345,7 @@ class Parameters(object):
         self.ras.imt_lat_deg = config.getfloat("RAS", "imt_lat_deg")
         self.ras.imt_long_diff_deg = config.getfloat("RAS", "imt_long_diff_deg")
         self.ras.season = config.get("RAS", "season")
+        self.ras.altitude = config.getfloat("RAS", "altitude")
 
         # P452 parameters
         self.ras.atmospheric_pressure = config.getfloat("RAS", "atmospheric_pressure")
