@@ -188,7 +188,7 @@ class Simulation(ABC, Observable):
             elevation_angles = np.transpose(station_b.get_elevation(station_a))
         elif station_a.station_type is StationType.FSS_ES or \
                 station_a.station_type is StationType.RAS:
-            elevation_angles = station_b.get_elevation(station_a)
+            elevation_angles = station_b.get_elevation_angle(station_a)
         else:
             elevation_angles = None
 
@@ -220,7 +220,7 @@ class Simulation(ABC, Observable):
 
             if station_a.station_type is StationType.FSS_SS or \
                 station_a.station_type is StationType.HAPS or \
-                station_a.station_type is StationType.RNS:
+                    station_a.station_type is StationType.RNS:
                 path_loss = propagation.get_loss(distance_3D=d_3D,
                                                  frequency=freq * np.ones(d_3D.shape),
                                                  indoor_stations=np.tile(station_b.indoor, (station_a.num_stations, 1)),
