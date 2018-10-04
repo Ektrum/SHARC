@@ -75,10 +75,13 @@ class StationFactory(object):
         imt_base_stations.antenna = np.empty(num_bs, dtype=AntennaBeamformingImt)
         par = param_ant.get_antenna_parameters("BS", "RX")
 
-        for i in range(num_bs):
-            imt_base_stations.antenna[i] = \
-            AntennaBeamformingImt(par, imt_base_stations.azimuth[i],\
-                                  imt_base_stations.elevation[i])
+        if param_ant.bs_antenna_type == 'F1245':
+            for i in range(num_bs):
+                imt_base_stations.antenna[i] = AntennaF1245(param,param_ant)
+        elif param_ant.bs_antenna_type == 'BEAMFORMING':
+            for i in range(num_bs):
+                imt_base_stations.antenna[i] = AntennaBeamformingImt(par, imt_base_stations.azimuth[i],
+                                                                     imt_base_stations.elevation[i])
 
         #imt_base_stations.antenna = [AntennaOmni(0) for bs in range(num_bs)]
         imt_base_stations.bandwidth = param.bandwidth*np.ones(num_bs)
