@@ -233,10 +233,8 @@ class Simulation(ABC, Observable):
                                                  indoor_stations=np.tile(station_b.indoor, (station_a.num_stations, 1)),
                                                  elevation=elevation_angles,
                                                  es_params=self.param_system,
-                                                 sat_params=self.param_system,
+                                                 sat_params=self.param_system, pfd = True,
                                                  tx_gain=gain_a, rx_gain=gain_b, number_of_sectors=sectors_in_node)
-                if station_a.station_type is StationType.RAS:
-                    path_loss = path_loss + 10*np.log10(d_3D)
 
             self.system_imt_antenna_gain = gain_a
             self.imt_system_antenna_gain = gain_b

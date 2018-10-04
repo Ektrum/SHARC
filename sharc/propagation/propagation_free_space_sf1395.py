@@ -40,6 +40,8 @@ class PropagationFreeSpaceSf1395(Propagation):
         negative_angles = np.nonzero(elevation < 0)
         elevation[negative_angles] = 0
 
+        pfd = kwargs.pop('pfd',False)
+
         if f < 10700:
             error_message = "SF1395 model does not support frequencies below 10.7 GHz"
             raise ValueError(error_message)
@@ -249,6 +251,9 @@ class PropagationFreeSpaceSf1395(Propagation):
                 raise ValueError(error_message)
 
         loss = free_space_loss + att
+
+        if pfd:
+            loss = loss + 10*np.log10(4*np.pi*np.power(d, 2))
 
         if number_of_sectors > 1:
             loss = np.repeat(loss, number_of_sectors, 1)
