@@ -39,7 +39,7 @@ class PropagationHapsRas(Propagation):
                                                       sat_params=sat_par,
                                                       free_space_enable=False)
 
-        loss = -1.0*self.attenuation + 10*np.log10(4*np.pi*d) + loss_sf1359
+        loss = -1.0*self.attenuation + 10*np.log10(4*np.pi*np.power(d, 2)) + loss_sf1359
 
         if number_of_sectors > 1:
             loss = np.repeat(loss, number_of_sectors, 1)
