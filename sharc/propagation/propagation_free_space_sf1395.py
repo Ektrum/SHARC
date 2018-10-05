@@ -33,8 +33,13 @@ class PropagationFreeSpaceSf1395(Propagation):
 
         number_of_sectors = kwargs.pop("number_of_sectors", 1)
 
-        free_space_loss = self.free_space.get_loss(distance_3D=d,
-                                                   frequency=f)
+        free_space_enable = kwargs.pop("free_space_enable",
+                                       True)
+
+        if free_space_enable:
+            free_space_loss = self.free_space.get_loss(distance_3D=d, frequency=f)
+        else:
+            free_space_loss = 0.0
 
         elevation = np.array(elevation['free_space'])
         negative_angles = np.nonzero(elevation < 0)
