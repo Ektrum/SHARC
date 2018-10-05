@@ -6,7 +6,7 @@ Created on Thu Oct 19 12:24:13 2017
 """
 
 from sharc.antenna.antenna import Antenna
-from sharc.parameters.parameters_haps import ParametersHaps
+from sharc.parameters.parameters_antenna_imt import ParametersAntennaImt
 
 import numpy as np
 
@@ -18,9 +18,9 @@ class AntennaF1891(Antenna):
     (ground) station and in the HAPS (airborne) platform.
     """
 
-    def __init__(self, param: ParametersHaps):
+    def __init__(self, param: ParametersAntennaImt):
         super().__init__()
-        self.peak_gain = param.antenna_gain
+        self.peak_gain = param.peak_gain
         self.psi_b = np.sqrt(7442/np.power(10, 0.1 * self.peak_gain))
         self.l_n = param.antenna_l_n
         self.l_f = self.peak_gain - 73
@@ -29,8 +29,15 @@ class AntennaF1891(Antenna):
         self.x = self.peak_gain + self.l_n + 60*np.log10(self.psi_2)
         self.psi_3 = np.power(10, (self.x - self.l_f)/60)
 
+    def add_beam(self, phi: float, theta: float):
+        self.beams_list.append((phi, theta))
+
     def calculate_gain(self, *args, **kwargs) -> np.array:
-        psi = np.absolute(kwargs["off_axis_angle_vec"])
+        phi_vec = np.array(kwargs["phi_vec"])
+        theta_vec = np.array(kwargs["theta_vec"])
+        beams_l = np.array(kwargs["beams_l"])
+
+        psi = self.calculate_off_axis_angle(phi_vec, theta_vec, beams_l)
 
         gain = self.l_f * np.ones(len(psi))
 
@@ -43,7 +50,26 @@ class AntennaF1891(Antenna):
         idx_2 = np.where((self.psi_2 < psi) & (psi <= self.psi_3))[0]
         gain[idx_2] = self.x - 60*np.log10(psi[idx_2])
 
+        idx_max_gain = np.where(beams_l == -1)[0]
+        gain[idx_max_gain] = self.peak_gain
+
         return gain
+
+    def calculate_off_axis_angle(self, Az, b, beams):
+        Az0_list = np.array(self.beams_list)[beams.astype(int)]
+        Az0 = np.array([k[0] for k in Az0_list])
+
+        a_list = np.array(self.beams_list)[beams.astype(int)]
+        a = np.array([k[1] for k in a_list])
+        C = Az0 - Az
+
+        off_axis_cos = np.cos(np.radians(a)) * np.cos(np.radians(b)) \
+                       + np.sin(np.radians(a)) * np.sin(np.radians(b)) * np.cos(np.radians(C))
+        off_axis_cos[np.where(off_axis_cos > 1)] = 1.0
+        off_axis_rad = np.arccos(off_axis_cos)
+        off_axis_deg = np.degrees(off_axis_rad)
+
+        return off_axis_deg
 
 
 if __name__ == '__main__':

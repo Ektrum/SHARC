@@ -78,6 +78,9 @@ class StationFactory(object):
         if param_ant.bs_antenna_type == 'F1245':
             for i in range(num_bs):
                 imt_base_stations.antenna[i] = AntennaF1245(param,param_ant)
+        elif param_ant.bs_antenna_type == 'F1891':
+            for i in range(num_bs):
+                imt_base_stations.antenna[i] = AntennaF1891(param_ant)
         elif param_ant.bs_antenna_type == 'BEAMFORMING':
             for i in range(num_bs):
                 imt_base_stations.antenna[i] = AntennaBeamformingImt(par, imt_base_stations.azimuth[i],
