@@ -330,7 +330,7 @@ class PlotAntennaPattern(object):
         if plot_type == "ELEMENT":
             ax1.set_title("IMT " + sta_type + " element horizontal antenna pattern")
         elif plot_type == "ARRAY":
-            ax1.set_title("IMT " + sta_type + " horizontal antenna pattern")
+            ax1.set_title("Beamforming horizontal antenna pattern")
 
         ax1.set_xlim(-180, 180)
 

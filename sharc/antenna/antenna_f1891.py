@@ -76,43 +76,32 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     # initialize antenna parameters
-    param = ParametersHaps()
+    param = ParametersAntennaImt()
     param.antenna_pattern = "ITU-R F.1891"
     param.antenna_l_n = -25
-    psi = np.linspace(0, 90, num = 10001)
+    param.peak_gain = 28.1
+    phi = np.linspace(-180,180, num = 10001)
+    the = np.zeros_like(phi)
+    beams = np.zeros_like(phi, dtype=int)
 
-    param.antenna_gain = 47
-    antenna47 = AntennaF1891(param)
-    gain47 = antenna47.calculate_gain(phi_vec=psi)
+    antenna = AntennaF1891(param)
+    antenna.add_beam(0.0, 0.0)
+    gain = antenna.calculate_gain(phi_vec=the,
+                                  theta_vec=phi,
+                                  beams_l=beams)
 
-    param.antenna_gain = 30
-    antenna30 = AntennaF1891(param)
-    gain30 = antenna30.calculate_gain(phi_vec=psi)
+    fig = plt.figure(figsize=(7,5), facecolor='w', edgecolor='k')  # create a figure object
+    ax1 = fig.add_subplot(111)
 
-    fig = plt.figure(figsize=(16,6), facecolor='w', edgecolor='k')  # create a figure object
-    ax1 = fig.add_subplot(121)
-
-    ax1.plot(psi, gain47, "-b", label="$G_m = 47$ dB")
-    ax1.set_ylim((-40, 60))
-    ax1.set_xlim((0, 20))
+    ax1.plot(phi, gain, "-b", label="$G_m = 28.1$ dB")
+    ax1.set_ylim((-30, 30))
+    ax1.set_xlim((-180, 180))
     ax1.set_title("ITU-R F.1891 antenna radiation pattern")
     ax1.set_xlabel("Off-axis angle [deg]")
     ax1.set_ylabel("Gain [dBi]")
-    ax1.legend(loc="upper right")
-    ax1.set_yticks([-40, -20, 0, 20, 40, 60])
-    ax1.set_xticks(np.linspace(0, 20, 11).tolist())
+    #ax1.legend(loc="upper right")
+    #ax1.set_yticks([-40, -20, 0, 20, 40, 60])
+    #ax1.set_xticks(np.linspace(0, 20, 11).tolist())
     ax1.grid(True)
-
-    ax2 = fig.add_subplot(122)
-    ax2.plot(psi, gain30, "-r", label="$G_m = 30$ dB")
-    ax2.set_ylim((-60, 40))
-    ax2.set_xlim((0, 90))
-    ax2.set_title("ITU-R F.1891 antenna radiation pattern")
-    ax2.set_xlabel("Off-axis angle [deg]")
-    ax2.set_ylabel("Gain [dBi]")
-    ax2.legend(loc="upper right")
-    ax2.set_yticks([-60, -40, -20, 0, 20, 40])
-    ax2.set_xticks(np.linspace(0, 90, 10).tolist())
-    ax2.grid(True)
 
     plt.show()

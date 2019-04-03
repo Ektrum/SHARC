@@ -58,6 +58,9 @@ class SimulationUplink(Simulation):
         self.connect_ue_to_bs()
         self.select_ue(random_number_gen)
 
+
+        # self.plot_scenario_haps()
+
         # Calculate coupling loss after beams are created
         self.coupling_loss_imt = self.calculate_coupling_loss(self.bs,
                                                               self.ue,

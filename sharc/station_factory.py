@@ -9,6 +9,7 @@ import numpy as np
 import sys
 import math
 from matplotlib import pyplot as plt
+from matplotlib.patches import  Circle
 
 from sharc.support.enumerations import StationType
 from sharc.parameters.parameters import Parameters
@@ -143,13 +144,13 @@ class StationFactory(object):
                 [ue_x, ue_y, theta, distance] = StationFactory.get_random_position_beam(num_ue, topology,
                                                                                         random_number_gen,
                                                                                         param.haps_beamwidth)
-                # # plot
-                # fig = plt.figure()
-                # ax = fig.add_subplot(1, 1, 1)
+                # plot
+                # plt.rcParams.update({'font.size': 12})
+                # fig = plt.figure(figsize=(8, 6.5), facecolor='w', edgecolor='k')
+                # ax = fig.gca()
                 #
-                # topology.plot(ax)
                 # for (x, y, az_plot, elev_plot) in zip(topology.x, topology.y,
-                #                                        topology.azimuth, topology.elevation):
+                #                                        topology.beam_azimuth, topology.beam_elevation):
                 #
                 #      beam_dist = np.tan(np.pi / 2 + np.deg2rad(elev_plot)) * topology.height
                 #      beam_x = x + beam_dist * np.cos(np.deg2rad(az_plot))
@@ -157,14 +158,21 @@ class StationFactory(object):
                 #      beam_radius = np.tan(np.pi / 2 - np.deg2rad(-elev_plot - param.haps_beamwidth / 2)) \
                 #                    * topology.height - beam_dist
                 #      circle = plt.Circle((beam_x,beam_y), beam_radius, fill=None, edgecolor='k')
-                #      ax = fig.gca()
-                #      ax.add_patch(circle)
+                #      ax.add_artist(circle)
+                #
+                # topology.plot(ax)
                 #
                 # plt.plot(ue_x, ue_y, '.', label="CPEs")
-                # plt.title('HAPS topology')
-                # plt.xlabel('x-coordinates[m]')
-                # plt.ylabel('y-coordinates[m]')
-                # plt.legend()
+                # plt.xlim([-100000,100000])
+                # plt.ylim([-100000, 100000])
+                # ticks = np.array([-100, -50, 0, 50, 100]) * 1000
+                # tick_labels = ["{}".format(int(t / 1000)) for t in ticks]
+                # plt.xticks(ticks, tick_labels)
+                # plt.yticks(ticks, tick_labels)
+                # plt.xlabel("x-coordinate [km]")
+                # plt.ylabel("y-coordinate [km]")
+                # plt.legend(loc="upper left", scatterpoints=1)
+                # plt.tight_layout()
                 # plt.show()
 
             else:

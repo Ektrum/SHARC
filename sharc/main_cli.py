@@ -17,7 +17,7 @@ from sharc.support.logging import Logging
 
 def main(argv):
     print("Welcome to SHARC!\n")
-    
+
     param_file = ''
 
     try:
@@ -27,7 +27,7 @@ def main(argv):
         sys.exit(2)
 
     if not opts:
-        param_file = os.path.join(os.getcwd(), "parameters", "test_parameters.ini")
+        param_file = os.path.join(os.getcwd(), "parameters", "parameters_CPE_to_ES_38GHZ_no_clutter_larger_diameter.ini")
     else:
         for opt, arg in opts:
             if opt == "-h":
